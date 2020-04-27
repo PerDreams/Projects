@@ -1,11 +1,7 @@
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * This is the main class for the mapping program. It extends the GUI abstract
@@ -43,6 +39,48 @@ public class Mapper extends GUI {
 	// our data structures.
 	private Graph graph;
 
+	protected Boolean beginOn;
+	protected Boolean endOn;
+	private static Node finish;
+	private static Node start;
+
+	@Override
+	protected void setEnd() {
+		endOn = true;
+		beginOn = false;
+		System.out.println("end");
+	}
+
+	@Override
+	protected void setBeginning() {
+		beginOn = true;
+		endOn = false;
+		System.out.println("begin");
+	}
+
+	@Override
+	protected void aStarSearch() {
+		if(start!=null && finish!=null){
+			ArrayList<Node> visited = new ArrayList<Node>();
+			Comparator<Fringe> sortByMinimumDistance = Comparator.comparing(Fringe::getDistance);
+			PriorityQueue<Fringe> aList = new PriorityQueue<Fringe>(sortByMinimumDistance);
+			Fringe cursor = new Fringe(start, null, null, 0);
+
+			aList.add(cursor);
+
+			Confirm this works with the for loop and make sure that the combined distance is included
+			//while(!aList.isEmpty()){cursor=aList.pop()}
+			for(Segment seg : graph.getSegments(cursor.getCurrent())){
+				if(!visited.contains(seg.end)){
+					aList.add(new Fringe(seg.end, cursor.getCurrent(), seg, ));
+				}
+			}
+		}
+		else if(finish==null){System.out.println("The end node is not defined.");}
+		else if(start==null){System.out.println("The start node is not defined");}
+		else if(start==null && finish==null){System.out.println("Neither the start nor the finish are defined.");}
+	}
+
 	@Override
 	protected void redraw(Graphics g) {
 		if (graph != null)
@@ -63,9 +101,20 @@ public class Mapper extends GUI {
 				closest = node;
 			}
 		}
-
+																		//HIGHLIGHT IT VISUALLY
 		// if it's close enough, highlight it and show some information.
-		if (clicked.distance(closest.location) < MAX_CLICKED_DISTANCE) {
+		System.out.println("\n");
+		if(endOn && clicked.distance(closest.location) < MAX_CLICKED_DISTANCE){
+			finish = closest;
+			endOn = false;
+			getTextOutputArea().setText("End Node is: \n" + closest.toString());
+		}
+		else if(beginOn && clicked.distance(closest.location) < MAX_CLICKED_DISTANCE){
+			start = closest;
+			beginOn = false;
+			getTextOutputArea().setText("Start Node is: \n" + closest.toString());
+		}
+		else if (clicked.distance(closest.location) < MAX_CLICKED_DISTANCE) {
 			graph.setHighlight(closest);
 			getTextOutputArea().setText(closest.toString());
 		}
@@ -73,7 +122,7 @@ public class Mapper extends GUI {
 
 	@Override
 	protected void onSearch() {
-		// Does nothing
+		//
 	}
 
 	@Override

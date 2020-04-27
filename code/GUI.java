@@ -94,6 +94,13 @@ public abstract class GUI {
 	protected abstract void onLoad(File nodes, File roads, File segments,
 			File polygons);
 
+	//This sets the ending
+	protected abstract void setEnd();
+
+	//This sets the beginning
+	protected abstract void setBeginning();
+
+	protected abstract void aStarSearch();
 	// here are some useful methods you'll need.
 
 	/**
@@ -232,6 +239,14 @@ public abstract class GUI {
 			}
 		});
 
+		JButton A = new JButton("A*");
+		A.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				aStarSearch();
+				redraw();
+			}
+		});
+
 		JButton west = new JButton("\u2190");
 		west.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
@@ -305,6 +320,22 @@ public abstract class GUI {
 			});
 		}
 
+		JButton Start = new JButton("Start");
+		Start.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				setBeginning();
+				redraw();
+			}
+		});
+
+		JButton End = new JButton("End");
+		End.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				setEnd();
+				redraw();
+			}
+		});
+
 		/*
 		 * next, make the top bar itself and arrange everything inside of it.
 		 */
@@ -324,6 +355,15 @@ public abstract class GUI {
 		// frame edge.
 		Border edge = BorderFactory.createEmptyBorder(5, 5, 5, 5);
 		controls.setBorder(edge);
+
+		JPanel aStar = new JPanel();
+		aStar.setLayout(new GridLayout(2,2));
+		aStar.setMaximumSize(new Dimension(50, 100));
+		aStar.add(Start);
+		aStar.add(End);
+		aStar.add(A);
+		controls.add(aStar);
+		controls.add(Box.createRigidArea(new Dimension(15, 0)));
 
 		JPanel loadquit = new JPanel();
 		loadquit.setLayout(new GridLayout(2, 1));

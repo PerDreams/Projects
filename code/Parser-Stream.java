@@ -11,7 +11,7 @@ import java.util.stream.*;
  * It implements the methods using the Stream functionality.
  * It is faster, and help you learn a bit of recent and fancy Java functionalities.
  */
-public class Parser {
+class Parser {
 
     private Parser(){
         //empty private constructor

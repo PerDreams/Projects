@@ -3,10 +3,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This represents the data structure storing all the roads, nodes, and
@@ -71,6 +68,16 @@ public class Graph {
 
 	public void setHighlight(Collection<Road> roads) {
 		this.highlightedRoads = roads;
+	}
+
+	public ArrayList<Segment> getSegments(Node cursor){
+		ArrayList<Segment> starters = new ArrayList<Segment>();
+		for(Segment seg : this.segments){
+			if(seg.end!=cursor) { //this may need to be fixed so that its set to the beginning and end
+				starters.add(seg);
+			}
+		}
+		return starters;
 	}
 }
 
