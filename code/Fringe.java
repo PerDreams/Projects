@@ -1,4 +1,6 @@
-public class Fringe implements Comparable<Fringe>{
+import java.util.Comparator;
+
+public class Fringe {
     private Node current;
     private Node previous;
     private double journey;
@@ -10,9 +12,11 @@ public class Fringe implements Comparable<Fringe>{
         this.previous = previous;
         this.journey = journey;
         this.connector = connector;
-        if(connector!=null){this.distance = connector.length;}
+        if(connector!=null){this.distance = Math.sqrt(Math.pow((previous.location.x - current.location.x), 2) + Math.pow((previous.location.y - current.location.y), 2));}
         else{this.distance = 0;}
     }
+
+    public void setDistance(Double d){this.distance = d;}
 
     public Node getCurrent(){return this.current;}
 
@@ -23,8 +27,4 @@ public class Fringe implements Comparable<Fringe>{
     public double getDistance(){return this.distance;}
 
     public Segment getConnector(){return this.connector;}
-
-    public int compareTo(Fringe next){
-        return Double.compare(this.distance, next.getDistance());
-    }
 }

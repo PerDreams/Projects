@@ -10,7 +10,7 @@ import java.util.*;
  * 
  * @author tony
  */
-public class Mapper extends GUI {
+public class Mapper extends GUI{
 	public static final Color NODE_COLOUR = new Color(77, 113, 255);
 	public static final Color SEGMENT_COLOUR = new Color(130, 130, 130);
 	public static final Color HIGHLIGHT_COLOUR = new Color(255, 219, 77);
@@ -48,37 +48,91 @@ public class Mapper extends GUI {
 	protected void setEnd() {
 		endOn = true;
 		beginOn = false;
-		System.out.println("end");
 	}
 
 	@Override
 	protected void setBeginning() {
 		beginOn = true;
 		endOn = false;
-		System.out.println("begin");
 	}
 
 	@Override
 	protected void aStarSearch() {
 		if(start!=null && finish!=null){
+			PriorityQueue<Fringe> aList = new PriorityQueue<Fringe>(new Comparator<Fringe>() {
+				@Override
+				public int compare(Fringe o1, Fringe o2) {
+
+					return Double.compare(o1.getDistance(), o2.getDistance());
+				}
+			}
+
+			);
+
+			Segment Temp;
 			ArrayList<Node> visited = new ArrayList<Node>();
-			Comparator<Fringe> sortByMinimumDistance = Comparator.comparing(Fringe::getDistance);
-			PriorityQueue<Fringe> aList = new PriorityQueue<Fringe>(sortByMinimumDistance);
+			Stack<Segment> route = new Stack<Segment>();
 			Fringe cursor = new Fringe(start, null, null, 0);
 
 			aList.add(cursor);
+			System.out.println("Start of A star");
+			while(!aList.isEmpty()) {
+				cursor = aList.poll();
+				route.add(cursor.getConnector());
+				visited.add(cursor.getCurrent());
 
-			Confirm this works with the for loop and make sure that the combined distance is included
-			//while(!aList.isEmpty()){cursor=aList.pop()}
-			for(Segment seg : graph.getSegments(cursor.getCurrent())){
-				if(!visited.contains(seg.end)){
-					aList.add(new Fringe(seg.end, cursor.getCurrent(), seg, ));
+				if(cursor.getCurrent()==finish){
+					System.out.println("fuck2");
+					break;
 				}
+
+				for (Segment seg : graph.getSegments(cursor.getCurrent())) {
+					if (seg.end != cursor.getCurrent() && (!visited.contains(seg.end))) {
+						aList.add(new Fringe(seg.end, cursor.getCurrent(), seg, (cursor.getJourney() + cursor.getDistance())));
+					} else if (seg.start != cursor.getCurrent() && (!visited.contains(seg.start))) {
+						aList.add(new Fringe(seg.start, cursor.getCurrent(), seg, (cursor.getJourney() + cursor.getDistance())));
+					}
+				}
+			}
+
+			System.out.println("fuck3");
+
+			if(route.peek().start==finish || route.peek().end==finish){
+				System.out.println("fuck4");
+				Temp = route.pop();
+				while(!route.isEmpty()){
+					System.out.println("fuck");
+					if(route.peek().end==Temp.start) {
+						Temp = route.pop();
+						System.out.println(Temp.road);
+						if (Temp.start == start) {
+							break;
+						}
+					}
+				}
+			}
+			else{
+				System.out.println("fuck5");
+				System.out.println(finish.nodeID);
+				System.out.println(route.peek().end.nodeID);
+				System.out.println(route.peek().start.nodeID);
 			}
 		}
 		else if(finish==null){System.out.println("The end node is not defined.");}
 		else if(start==null){System.out.println("The start node is not defined");}
 		else if(start==null && finish==null){System.out.println("Neither the start nor the finish are defined.");}
+		System.out.println("");
+	}
+
+	private Fringe minimumElement(ArrayList<Fringe> fr){
+		Fringe min = new Fringe(null, null, null, Double.POSITIVE_INFINITY);
+		min.setDistance(Double.POSITIVE_INFINITY);
+
+		for(Fringe f : fr){
+			if(f.getDistance() < min.getDistance()){min = f;}
+		}
+
+		return min;
 	}
 
 	@Override

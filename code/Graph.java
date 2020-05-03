@@ -73,7 +73,7 @@ public class Graph {
 	public ArrayList<Segment> getSegments(Node cursor){
 		ArrayList<Segment> starters = new ArrayList<Segment>();
 		for(Segment seg : this.segments){
-			if(seg.end!=cursor) { //this may need to be fixed so that its set to the beginning and end
+			if(seg.end==cursor || seg.start==cursor) { //this may need to be fixed so that its set to the beginning and end
 				starters.add(seg);
 			}
 		}
