@@ -7,7 +7,7 @@ import java.util.*;
  * This is the main class for the mapping program. It extends the GUI abstract
  * class and implements all the methods necessary, as well as having a main
  * function.
- * 
+ *
  * @author tony
  */
 public class Mapper extends GUI{
@@ -39,26 +39,33 @@ public class Mapper extends GUI{
 	// our data structures.
 	private Graph graph;
 
+	//VARIABLES FOR THE A STAR SEARCH
 	protected Boolean beginOn;
 	protected Boolean endOn;
 	private static Node finish;
 	private static Node start;
 
+	//BUTTON FOR SETTING THE ENDING SEARCH NODE
 	@Override
 	protected void setEnd() {
 		endOn = true;
 		beginOn = false;
 	}
 
+	//BUTTON FOR SETTING THE BEGINNING SEARCH NODE
 	@Override
 	protected void setBeginning() {
 		beginOn = true;
 		endOn = false;
 	}
 
+	//BUTTON AND METHOD FOR THE A STAR SEARCH
 	@Override
 	protected void aStarSearch() {
+		//THIS IF PREVENTS ANY ISSUES WITH THE START OR FINISH. IF A START AND AN END EXIST, THEN THERE IS AN ANSWER (PRE-ONEWAY TRAVEL)
+
 		if(start!=null && finish!=null){
+			//THE COMPARATOR FOR THE SMALLEST DISTANCE OBJECT IN THE A STAR SEARCH
 			PriorityQueue<Fringe> aList = new PriorityQueue<Fringe>(new Comparator<Fringe>() {
 				@Override
 				public int compare(Fringe o1, Fringe o2) {
@@ -66,73 +73,87 @@ public class Mapper extends GUI{
 					return Double.compare(o1.getDistance(), o2.getDistance());
 				}
 			}
-
 			);
 
-			Segment Temp;
+			//LOCAL INSTANCES VARIABLES FOR THE A STAR SEARCH
+			Fringe Temp;
 			ArrayList<Node> visited = new ArrayList<Node>();
-			Stack<Segment> route = new Stack<Segment>();
+			Stack<Fringe> route = new Stack<Fringe>();
+			Stack<Fringe> finalRoute = new Stack<Fringe>();
 			Fringe cursor = new Fringe(start, null, null, 0);
+			Double totalDistance = 0.0;
+			Double duplicateDistance = 0.0;
+			String message = "";
 
 			aList.add(cursor);
-			System.out.println("Start of A star");
+
+			//THIS IS THE A STAR METHOD ITSELF. BY RELYING ON ITERATING THROUGH THE AVALIABLE SEGMENTS UNTIL FINDING THE ENDING.
+			//IT RELIES ON THE QUEUE OF FRINGES OBJECT AND THE SORT OF THE QUEUE FOR THE CORRECT ROUTE.
 			while(!aList.isEmpty()) {
 				cursor = aList.poll();
-				route.add(cursor.getConnector());
+				route.add(cursor);
 				visited.add(cursor.getCurrent());
 
-				if(cursor.getCurrent()==finish){
-					System.out.println("fuck2");
+				if(cursor.getCurrent()==finish){ //peeek then quit
 					break;
 				}
 
-				for (Segment seg : graph.getSegments(cursor.getCurrent())) {
+				for (Segment seg : cursor.getCurrent().segments) {
 					if (seg.end != cursor.getCurrent() && (!visited.contains(seg.end))) {
 						aList.add(new Fringe(seg.end, cursor.getCurrent(), seg, (cursor.getJourney() + cursor.getDistance())));
-					} else if (seg.start != cursor.getCurrent() && (!visited.contains(seg.start))) {
+					} else if (seg.start != cursor.getCurrent() && (!visited.contains(seg.start)) && (seg.road.oneway!=1))  {
 						aList.add(new Fringe(seg.start, cursor.getCurrent(), seg, (cursor.getJourney() + cursor.getDistance())));
 					}
 				}
 			}
 
-			System.out.println("fuck3");
-
-			if(route.peek().start==finish || route.peek().end==finish){
-				System.out.println("fuck4");
+			//THIS WORKS BACKWARDS TO ENSURE THAT THE WE HAVE THE RIGHT ROUTE.
+			//MOVING FROM FINISH TO START BY ITERATING THROUGH THE FRINGE ELEMENTS BY THEIR PREVIOUS ELEMENT TILL THE START
+			if(route.peek().getCurrent() == finish){
 				Temp = route.pop();
+				finalRoute.add(Temp);
 				while(!route.isEmpty()){
-					System.out.println("fuck");
-					if(route.peek().end==Temp.start) {
-						Temp = route.pop();
-						System.out.println(Temp.road);
-						if (Temp.start == start) {
+					if(route.peek().getCurrent() == Temp.getPrevious()){
+						if(route.peek().getCurrent()==start){
+							finalRoute.add(Temp);
+							finalRoute.add(route.peek());
 							break;
 						}
+						Temp = route.pop();
+						finalRoute.add(Temp);
+					}
+					else{
+						route.pop();
 					}
 				}
 			}
-			else{
-				System.out.println("fuck5");
-				System.out.println(finish.nodeID);
-				System.out.println(route.peek().end.nodeID);
-				System.out.println(route.peek().start.nodeID);
+
+			//BUG NUMBER 1
+			finalRoute.pop();
+			finalRoute.pop();
+
+			//NOW THAT WE HAVE A STACK WITH THE PROPER ORDER, THIS METHOD PRINTS THE ROUTE, IN ORDER TO THE SCREEN WITH THEIR DISTANCE (HOPEFFULLY IN A STEP)
+			while(!finalRoute.isEmpty()){
+				Temp = finalRoute.pop();
+				graph.highlightedRoads.add(Temp.getConnector().road);
+				if(Temp.getConnector()!=null) {
+					duplicateDistance = Temp.getConnector().length;
+						while (finalRoute.size() > 0 && finalRoute.peek()!=null && finalRoute.peek().getConnector()!=null && Temp.getConnector().road == finalRoute.peek().getConnector().road) {
+							duplicateDistance += finalRoute.peek().getConnector().length;
+							Temp = finalRoute.pop();
+							graph.highlightedRoads.add(Temp.getConnector().road);
+						}
+					totalDistance+=duplicateDistance;
+
+					message+=(Temp.getConnector().road.name + ": " + String.format("%.2f", duplicateDistance) + "km" + "\n");
+				}
 			}
+			message+=("Total Distance: " + String.format("%.2f", totalDistance) + "km" + "\n");
+			getTextOutputArea().setText(message);
 		}
-		else if(finish==null){System.out.println("The end node is not defined.");}
-		else if(start==null){System.out.println("The start node is not defined");}
-		else if(start==null && finish==null){System.out.println("Neither the start nor the finish are defined.");}
-		System.out.println("");
-	}
-
-	private Fringe minimumElement(ArrayList<Fringe> fr){
-		Fringe min = new Fringe(null, null, null, Double.POSITIVE_INFINITY);
-		min.setDistance(Double.POSITIVE_INFINITY);
-
-		for(Fringe f : fr){
-			if(f.getDistance() < min.getDistance()){min = f;}
-		}
-
-		return min;
+		else if(finish==null){getTextOutputArea().setText("The end node is not defined.");}
+		else if(start==null){getTextOutputArea().setText("The start node is not defined");}
+		else if(start==null && finish==null){getTextOutputArea().setText("Neither the start nor the finish are defined.");}
 	}
 
 	@Override
@@ -155,9 +176,8 @@ public class Mapper extends GUI{
 				closest = node;
 			}
 		}
-																		//HIGHLIGHT IT VISUALLY
+		//HIGHLIGHT IT VISUALLY
 		// if it's close enough, highlight it and show some information.
-		System.out.println("\n");
 		if(endOn && clicked.distance(closest.location) < MAX_CLICKED_DISTANCE){
 			finish = closest;
 			endOn = false;

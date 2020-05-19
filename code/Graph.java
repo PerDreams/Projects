@@ -70,15 +70,6 @@ public class Graph {
 		this.highlightedRoads = roads;
 	}
 
-	public ArrayList<Segment> getSegments(Node cursor){
-		ArrayList<Segment> starters = new ArrayList<Segment>();
-		for(Segment seg : this.segments){
-			if(seg.end==cursor || seg.start==cursor) { //this may need to be fixed so that its set to the beginning and end
-				starters.add(seg);
-			}
-		}
-		return starters;
-	}
 }
 
 // code for COMP261 assignments

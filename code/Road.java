@@ -9,7 +9,7 @@ import java.util.HashSet;
  * @author tony
  */
 public class Road {
-	public final int roadID;
+	public final int roadID, oneway;
 	public final String name, city;
 	public final Collection<Segment> components;
 
@@ -19,6 +19,8 @@ public class Road {
 		this.roadID = roadID;
 		this.city = city;
 		this.name = label;
+		this.oneway = oneway;
+
 		this.components = new HashSet<Segment>();
 	}
 
